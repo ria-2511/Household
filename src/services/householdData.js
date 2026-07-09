@@ -20,6 +20,52 @@ const getClient = () => {
   return supabase;
 };
 
+export const createHouseholdRemote = async (userId, name) => {
+  const client = getClient();
+  
+  // 1. Generate a random join code
+  const randomCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+  // 2. Create the Household
+  const { data: household, error } = await client
+    .from('households')
+    .insert({ 
+      name: name || 'My Household', 
+      owner_id: userId,
+      join_code: randomCode
+    })
+    .select()
+    .single();
+    
+  if (error) throw error;
+
+  // 3. Add user as owner
+  const { error: memberError } = await client
+    .from('household_members')
+    .insert({ household_id: household.id, user_id: userId, role: 'owner' });
+  
+  if (memberError) throw memberError;
+
+  // 4. Create default settings
+  await client.from('household_settings').insert({ household_id: household.id });
+
+  // 5. Create default categories & accounts scoped to this specific household
+  await client.from('categories').insert([
+    { household_id: household.id, name: 'Rent/Mortgage', icon: '🏠' }, 
+    { household_id: household.id, name: 'Groceries', icon: '🛒' }, 
+    { household_id: household.id, name: 'Transport', icon: '🚗' }, 
+    { household_id: household.id, name: 'Dining Out', icon: '🍽️' }
+  ]);
+  
+  await client.from('accounts').insert([
+    { household_id: household.id, name: 'HDFC Credit Card', active: true }, 
+    { household_id: household.id, name: 'SBI Checking', active: true }, 
+    { household_id: household.id, name: 'Cash', active: false }
+  ]);
+
+  return household;
+};
+
 export const fetchProfile = async (userId) => {
   const { data, error } = await getClient()
     .from('profiles')
@@ -46,14 +92,30 @@ export const updateProfile = async (userId, updates) => {
 
 export const fetchHouseholdContext = async (userId) => {
   const client = getClient();
+  
+  let membership = null;
+  let memberError = null;
 
-  const { data: membership, error: memberError } = await client
-    .from('household_members')
-    .select('household_id, role, joined_at')
-    .eq('user_id', userId)
-    .maybeSingle();
+  // FIX: Retry Loop for New Signups
+  // Give the Postgres trigger up to 2 seconds (4 attempts * 500ms) to create the household
+  for (let i = 0; i < 4; i++) {
+    const res = await client
+      .from('household_members')
+      .select('household_id, role, joined_at')
+      .eq('user_id', userId)
+      .maybeSingle();
+      
+    membership = res.data;
+    memberError = res.error;
 
-  if (memberError) throw memberError;
+    if (memberError) throw memberError;
+    if (membership) break; // Found it! Exit the loop.
+    
+    // Wait 500ms before checking again
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  // If after retries there is still no membership, they actually need to join via code
   if (!membership) return { needsJoin: true, household: null, members: [], joinCode: null };
 
   const { data: household, error: householdError } = await client
@@ -61,14 +123,12 @@ export const fetchHouseholdContext = async (userId) => {
     .select('*')
     .eq('id', membership.household_id)
     .single();
-
   if (householdError) throw householdError;
 
   const { data: membersData, error: membersError } = await client
     .from('household_members')
     .select('user_id, role, joined_at')
     .eq('household_id', membership.household_id);
-
   if (membersError) throw membersError;
 
   const userIds = membersData.map((m) => m.user_id);
@@ -76,7 +136,6 @@ export const fetchHouseholdContext = async (userId) => {
     .from('profiles')
     .select('*')
     .in('id', userIds);
-
   if (profilesError) throw profilesError;
 
   const profileMap = Object.fromEntries((profiles || []).map((p) => [p.id, p]));

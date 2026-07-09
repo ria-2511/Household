@@ -47,9 +47,11 @@ const JoinHouseholdView = ({ onGoLogin, authenticated = false }) => {
       title="Join a household"
       subtitle={authenticated ? 'Enter the code shared with you' : 'Sign in first, then enter your code'}
       footer={
-        !authenticated && (
+        !authenticated ? (
           <button type="button" className="auth-link" onClick={onGoLogin}>Sign in to join</button>
-        )
+        ) : onBack ? (
+           <button type="button" className="auth-link" onClick={onBack}>Back to options</button>
+        ) : null
       }
     >
       {step === 'enter' ? (

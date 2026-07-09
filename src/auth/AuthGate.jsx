@@ -11,6 +11,7 @@ import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import LoginView from './LoginView';
 import SignUpView from './SignUpView';
 import JoinHouseholdView from './JoinHouseholdView';
+import HouseholdSetupView from '../views/HouseholdSetupView/HouseholdSetupView.jsx'; // Import the new view
 import App from '../app';
 import './AuthShell.scss';
 
@@ -80,8 +81,21 @@ const AuthGate = ({ children }) => {
     );
   }
 
+  // If they are logged in but have no household, show them the Setup Choice screen.
+  // We use authScreen === 'join' to allow them to transition to the Join view from the Setup view.
   if (needsJoin) {
-    return <JoinHouseholdView authenticated onGoLogin={() => {}} />;
+    if (authScreen === 'join') {
+      return <JoinHouseholdView authenticated onGoLogin={() => {}} onBack={() => setAuthScreen('setup')} />;
+    }
+    // Default to setup choices
+    return <HouseholdSetupView onGoJoin={() => setAuthScreen('join')} />;
+  }
+
+  // CRITICAL FIX FOR ISSUE #3 & #4: 
+  // Do not render the main App until the household data (categories, accounts) 
+  // is fully fetched and hydrated into Redux.
+  if (!household && !needsJoin) {
+     return <div className="auth-loading">Hydrating household data...</div>;
   }
 
   return children;

@@ -10,6 +10,7 @@ import {
   fetchProfile,
   subscribeToHousehold,
   unsubscribeFromHousehold,
+  createHouseholdRemote, // Add this import
 } from '../../services/householdData';
 import {
   mapTask,
@@ -119,6 +120,21 @@ export const renameHousehold = createAsyncThunk(
     try {
       const data = await updateHouseholdName(householdId, name);
       return data.name;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const createHousehold = createAsyncThunk(
+  'household/create',
+  async (_, { getState, dispatch, rejectWithValue }) => {
+    try {
+      const userId = getState().auth.user?.id;
+      // Tell the backend to create the household and add the user as owner
+      await createHouseholdRemote(userId);
+      // Reload the household context to fetch the new household and hydrate the store
+      return dispatch(loadHousehold(userId)).unwrap();
     } catch (err) {
       return rejectWithValue(err.message);
     }
