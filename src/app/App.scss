@@ -1,0 +1,19 @@
+.app-shell {
+  @apply min-h-screen font-sans font-medium;
+  background: var(--color-bg);
+  color: var(--color-text);
+
+  ::selection {
+    background: var(--color-primary);
+    color: white;
+  }
+}
+
+.app-shell__container {
+  @apply max-w-[480px] mx-auto min-h-screen relative shadow-[0_0_20px_rgba(0,0,0,0.05)] overflow-hidden;
+  background: var(--color-bg);
+}
+
+.app-shell__content {
+  @apply pb-[100px] pt-5 px-4 h-screen overflow-y-auto;
+}

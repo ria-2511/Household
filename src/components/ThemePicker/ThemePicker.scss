@@ -1,0 +1,93 @@
+.theme-picker {
+  @apply bg-[var(--color-surface)] p-4 rounded-2xl border border-gray-100;
+}
+
+.theme-picker__title {
+  @apply font-bold mb-1 text-sm border-b pb-2;
+  color: var(--color-text);
+}
+
+.theme-picker__hint {
+  @apply text-[10px] mb-4;
+  color: var(--color-muted);
+}
+
+.theme-picker__grid {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.theme-picker__option {
+  @apply text-left p-3 rounded-xl border-2 transition-all;
+  border-color: transparent;
+  background: var(--color-bg);
+
+  &--active {
+    border-color: var(--color-primary);
+  }
+}
+
+.theme-picker__swatches {
+  @apply flex gap-1 mb-2;
+}
+
+.theme-picker__swatch {
+  @apply w-4 h-4 rounded-full border border-black/5;
+
+  &--bg { background: var(--color-bg); }
+  &--primary { background: var(--color-primary); }
+  &--secondary { background: var(--color-secondary); }
+}
+
+@each $id in 'sage-sand', 'fresh-kitchen', 'sunny-morning', 'modern-indigo', 'soft-pastel', 'dark-cozy' {
+  .theme-picker__option[data-theme-preview='#{$id}'] {
+    .theme-picker__swatch--bg { background: var(--color-bg); }
+    .theme-picker__swatch--primary { background: var(--color-primary); }
+    .theme-picker__swatch--secondary { background: var(--color-secondary); }
+  }
+}
+
+.theme-picker__option[data-theme-preview='fresh-kitchen'] {
+  --color-bg: #FFFBF5;
+  --color-primary: #2D6A4F;
+  --color-secondary: #F4A261;
+}
+
+.theme-picker__option[data-theme-preview='sunny-morning'] {
+  --color-bg: #FFF8E7;
+  --color-primary: #FB8500;
+  --color-secondary: #FFB703;
+}
+
+.theme-picker__option[data-theme-preview='modern-indigo'] {
+  --color-bg: #F8FAFC;
+  --color-primary: #6366F1;
+  --color-secondary: #14B8A6;
+}
+
+.theme-picker__option[data-theme-preview='soft-pastel'] {
+  --color-bg: #FAF5FF;
+  --color-primary: #A855F7;
+  --color-secondary: #FBBF24;
+}
+
+.theme-picker__option[data-theme-preview='dark-cozy'] {
+  --color-bg: #24283B;
+  --color-primary: #7AA2F7;
+  --color-secondary: #9ECE6A;
+}
+
+.theme-picker__option[data-theme-preview='sage-sand'] {
+  --color-bg: #F4F3EF;
+  --color-primary: #6E8E75;
+  --color-secondary: #D4A373;
+}
+
+.theme-picker__label {
+  @apply block text-xs font-bold;
+  color: var(--color-text);
+}
+
+.theme-picker__desc {
+  @apply block text-[10px] mt-0.5;
+  color: var(--color-muted);
+}

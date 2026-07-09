@@ -1,0 +1,103 @@
+$themes: (
+  'sage-sand': (
+    bg: #F4F3EF,
+    text: #2B2D42,
+    primary: #6E8E75,
+    primary-hover: #5a7660,
+    secondary: #D4A373,
+    secondary-hover: #c29161,
+    danger: #E53E3E,
+    danger-hover: #b91c1c,
+    surface: #FFFFFF,
+    muted: #6b7280,
+    accent-blue: #3182CE,
+    neutral: #4A5568,
+  ),
+  'fresh-kitchen': (
+    bg: #FFFBF5,
+    text: #1B263B,
+    primary: #2D6A4F,
+    primary-hover: #1b4332,
+    secondary: #F4A261,
+    secondary-hover: #e76f51,
+    danger: #E76F51,
+    danger-hover: #c44536,
+    surface: #FFFFFF,
+    muted: #64748b,
+    accent-blue: #219EBC,
+    neutral: #457b9d,
+  ),
+  'sunny-morning': (
+    bg: #FFF8E7,
+    text: #023047,
+    primary: #FB8500,
+    primary-hover: #e67700,
+    secondary: #FFB703,
+    secondary-hover: #f59e0b,
+    danger: #E63946,
+    danger-hover: #c1121f,
+    surface: #FFFFFF,
+    muted: #6b7280,
+    accent-blue: #219EBC,
+    neutral: #023047,
+  ),
+  'modern-indigo': (
+    bg: #F8FAFC,
+    text: #0F172A,
+    primary: #6366F1,
+    primary-hover: #4f46e5,
+    secondary: #14B8A6,
+    secondary-hover: #0d9488,
+    danger: #F43F5E,
+    danger-hover: #e11d48,
+    surface: #FFFFFF,
+    muted: #64748b,
+    accent-blue: #6366F1,
+    neutral: #334155,
+  ),
+  'soft-pastel': (
+    bg: #FAF5FF,
+    text: #3B0764,
+    primary: #A855F7,
+    primary-hover: #9333ea,
+    secondary: #FBBF24,
+    secondary-hover: #f59e0b,
+    danger: #F472B6,
+    danger-hover: #ec4899,
+    surface: #FFFFFF,
+    muted: #7c3aed,
+    accent-blue: #60A5FA,
+    neutral: #581c87,
+  ),
+  'dark-cozy': (
+    bg: #1A1B26,
+    text: #C0CAF5,
+    primary: #7AA2F7,
+    primary-hover: #5a7fd4,
+    secondary: #9ECE6A,
+    secondary-hover: #7eb356,
+    danger: #FF9E64,
+    danger-hover: #e07a3a,
+    surface: #24283B,
+    muted: #565F89,
+    accent-blue: #7AA2F7,
+    neutral: #a9b1d6,
+  ),
+);
+
+:root,
+[data-theme='sage-sand'] {
+  @each $key, $value in map-get($themes, 'sage-sand') {
+    --color-#{$key}: #{$value};
+  }
+}
+
+@each $theme-name, $tokens in $themes {
+  @if $theme-name != 'sage-sand' {
+    [data-theme='#{$theme-name}'] {
+      @each $key, $value in $tokens {
+        --color-#{$key}: #{$value};
+      }
+    }
+  }
+}
