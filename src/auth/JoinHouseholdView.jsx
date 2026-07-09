@@ -10,7 +10,7 @@ import { showToast } from '../store/slices/uiSlice';
 import AuthShell from './AuthShell';
 import './AuthShell.scss';
 
-const JoinHouseholdView = ({ onGoLogin, authenticated = false }) => {
+const JoinHouseholdView = ({ onGoLogin, authenticated = false, onBack }) => {
   const dispatch = useAppDispatch();
   const { joinPreview, error, loading } = useAppSelector((state) => state.household);
   const userId = useAppSelector((state) => state.auth.user?.id);

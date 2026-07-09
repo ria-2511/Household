@@ -56,12 +56,6 @@ export const createHouseholdRemote = async (userId, name) => {
     { household_id: household.id, name: 'Transport', icon: '🚗' }, 
     { household_id: household.id, name: 'Dining Out', icon: '🍽️' }
   ]);
-  
-  await client.from('accounts').insert([
-    { household_id: household.id, name: 'HDFC Credit Card', active: true }, 
-    { household_id: household.id, name: 'SBI Checking', active: true }, 
-    { household_id: household.id, name: 'Cash', active: false }
-  ]);
 
   return household;
 };
