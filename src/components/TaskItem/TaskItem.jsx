@@ -15,6 +15,14 @@ const TaskItem = ({ task, onToggle, onEdit }) => (
             <div className="text-[10px] text-gray-400 flex items-center gap-1 font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span> Added by {task.owner}
             </div>
+            
+            {/* Show assigned user if not done */}
+            {!task.done && task.assignedToName && (
+               <div className="text-[10px] text-[var(--color-accent-blue)] flex items-center gap-1 font-bold">
+                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent-blue)]"></span> Assigned to {task.assignedToName}
+               </div>
+            )}
+            
             {task.done && task.completedBy && (
                <div className="text-[10px] text-[var(--color-primary)] flex items-center gap-1 font-bold">
                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]"></span> ✓ Marked Done by {task.completedBy}

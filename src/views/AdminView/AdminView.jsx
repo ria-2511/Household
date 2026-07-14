@@ -22,6 +22,7 @@ const AdminView = () => {
   const currentUser = useAppSelector((state) => state.config.currentUser);
 
   const [newCat, setNewCat] = useState('');
+  const [newCatIcon, setNewCatIcon] = useState('🏷️'); // FEATURE 6: New state for icon
   const [newAcc, setNewAcc] = useState('');
   const [tempName, setTempName] = useState(currentUser.name);
 
@@ -44,9 +45,10 @@ const AdminView = () => {
 
   const handleAddCategory = async () => {
     if (!newCat.trim()) return;
-    const result = await dispatch(addCategoryRemote({ name: newCat, icon: '🏷️' }));
+    const result = await dispatch(addCategoryRemote({ name: newCat, icon: newCatIcon || '🏷️' }));
     if (addCategoryRemote.fulfilled.match(result)) {
       setNewCat('');
+      setNewCatIcon('🏷️'); // Reset icon
       dispatch(showToast('Category added'));
     }
   };
@@ -108,6 +110,8 @@ const AdminView = () => {
             {categories.map((cat) => <span key={cat.id} className="px-3 py-1 rounded-full bg-[var(--color-bg)] text-[var(--color-text)] text-sm flex items-center gap-1 shadow-sm shrink-0">{cat.icon} {cat.name}</span>)}
           </div>
           <div className="flex gap-2">
+            {/* FEATURE 6: Icon Input */}
+            <input type="text" placeholder="🍕" value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} className="w-12 bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 text-center text-sm focus:outline-none min-w-0" maxLength={2} />
             <input type="text" placeholder="New category name..." value={newCat} onChange={(e) => setNewCat(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()} className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none min-w-0" />
             <button onClick={handleAddCategory} className="bg-[var(--color-primary)] text-white h-[38px] w-[38px] rounded-lg flex items-center justify-center hover:bg-[var(--color-primary-hover)] shrink-0"><span className="text-xl">＋</span></button>
           </div>

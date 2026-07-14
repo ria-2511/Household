@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from '../../store';
-import { setActiveTab, setIsCreatingRecipe } from '../../store/slices/uiSlice';
+import { setActiveTab, setIsCreatingRecipe, showToast } from '../../store/slices/uiSlice';
+import { loadHousehold } from '../../store/slices/householdSlice';
 import {
   formatCurrency,
   getCurrentMonthExpenses,
@@ -20,8 +21,10 @@ const DashboardView = () => {
   const recipes = useAppSelector((state) => state.recipes.items);
   const menuPlan = useAppSelector((state) => state.menuPlan.plan);
   const currentUser = useAppSelector((state) => state.config.currentUser);
+  const isRefreshing = useAppSelector((state) => state.household.loading);
 
   const goToTab = (tab) => dispatch(setActiveTab(tab));
+
   const openRecipeCreator = () => {
     dispatch(setActiveTab('planner'));
     dispatch(setIsCreatingRecipe(true));
@@ -29,13 +32,24 @@ const DashboardView = () => {
 
   const tasksLeft = tasks.filter((t) => !t.done).length;
   const groceriesLeft = groceries.filter((g) => !g.done).length;
+
   const currentMonthExpenses = getCurrentMonthExpenses(expenses);
   const totalSpend = currentMonthExpenses.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
   const formattedSpend = formatCurrency(totalSpend);
   const formattedBudget = formatCurrency(budget);
+
   const todayAbbr = getTodayAbbr();
   const todaysMenu = menuPlan[todayAbbr] || {};
   const recipeName = (id) => getRecipeName(recipes, id);
+
+  const handleRefresh = async () => {
+    if (currentUser?.id) {
+       const result = await dispatch(loadHousehold(currentUser.id));
+       if (loadHousehold.fulfilled.match(result)) {
+           dispatch(showToast('App data refreshed'));
+       }
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,7 +58,13 @@ const DashboardView = () => {
           <h1 className="text-2xl font-bold text-[var(--color-text)]">Hello, {getFirstName(currentUser)}! 👋</h1>
           <p className="text-gray-500 text-sm mt-1">Everything looks good today</p>
         </div>
-        <button onClick={() => goToTab('admin')} className="w-10 h-10 bg-[var(--color-surface)] rounded-full flex items-center justify-center shadow-sm text-xl text-gray-500 border border-gray-100 hover:bg-gray-50">⚙</button>
+        {/* FEATURE 5: Refresh Button */}
+        <div className="flex gap-2">
+            <button onClick={handleRefresh} disabled={isRefreshing} className="w-10 h-10 bg-[var(--color-surface)] rounded-full flex items-center justify-center shadow-sm text-xl text-gray-500 border border-gray-100 hover:bg-gray-50 disabled:opacity-50">
+                <span className={isRefreshing ? "animate-spin" : ""}>↻</span>
+            </button>
+            <button onClick={() => goToTab('admin')} className="w-10 h-10 bg-[var(--color-surface)] rounded-full flex items-center justify-center shadow-sm text-xl text-gray-500 border border-gray-100 hover:bg-gray-50">⚙</button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

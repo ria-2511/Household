@@ -11,6 +11,9 @@ const TodoView = () => {
   const dispatch = useAppDispatch();
   const tasks = useAppSelector((state) => state.tasks.items);
   const currentUser = useAppSelector((state) => state.config.currentUser);
+  const members = useAppSelector((state) => state.household.members); // Fetch members
+  const saving = useAppSelector((state) => state.tasks.saving); // Fetch loading state
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
@@ -49,6 +52,14 @@ const TodoView = () => {
     setModalOpen(true);
   };
 
+  // FEATURE 1: Sort tasks: Not done first, then done. Secondary sort by ID (newest first).
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.done === b.done) {
+      return b.id - a.id;
+    }
+    return a.done ? 1 : -1;
+  });
+
   return (
     <div className="flex flex-col h-full relative">
       <div className="mb-6">
@@ -62,7 +73,7 @@ const TodoView = () => {
 
       <div className="flex-1 overflow-y-auto pb-6">
         <div className="flex flex-col gap-3">
-          {tasks.map((task) => (
+          {sortedTasks.map((task) => (
             <TaskItem key={task.id} task={task} onToggle={() => handleToggle(task.id)} onEdit={() => openEdit(task)} />
           ))}
         </div>
@@ -75,6 +86,8 @@ const TodoView = () => {
         onDelete={editingTask ? () => handleDelete(editingTask.id) : null}
         initialData={editingTask}
         currentUser={currentUser}
+        members={members}
+        isSaving={saving}
       />
     </div>
   );

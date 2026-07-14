@@ -11,6 +11,8 @@ const GroceriesView = () => {
   const dispatch = useAppDispatch();
   const groceries = useAppSelector((state) => state.groceries.items);
   const currentUser = useAppSelector((state) => state.config.currentUser);
+  const saving = useAppSelector((state) => state.groceries.saving); // Fetch loading state
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
@@ -75,6 +77,7 @@ const GroceriesView = () => {
         onDelete={editingItem ? () => handleDelete(editingItem.id) : null}
         initialData={editingItem}
         currentUser={currentUser}
+        isSaving={saving}
       />
     </div>
   );

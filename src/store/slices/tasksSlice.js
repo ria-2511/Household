@@ -10,6 +10,7 @@ export const saveTask = createAsyncThunk(
       const householdId = state.household.household?.id;
       const userId = state.auth.user?.id;
       const ownerName = getFirstName(state.config.currentUser);
+
       if (!householdId || !userId) throw new Error('No household loaded');
 
       if (isEdit) {
@@ -40,6 +41,7 @@ export const toggleTaskRemote = createAsyncThunk(
     try {
       const task = getState().tasks.items.find((t) => t.id === id);
       if (!task) throw new Error('Task not found');
+      
       const newDone = !task.done;
       return await updateTaskApi(id, {
         ...task,
@@ -54,6 +56,7 @@ export const toggleTaskRemote = createAsyncThunk(
 
 const tasksSlice = createSlice({
   name: 'tasks',
+  // FEATURE 2: Added Saving State for Loaders
   initialState: { items: [], saving: false },
   reducers: {
     setTasks: (state, action) => {
@@ -70,12 +73,18 @@ const tasksSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(saveTask.pending, (state) => { state.saving = true; })
+      .addCase(saveTask.rejected, (state) => { state.saving = false; })
       .addCase(saveTask.fulfilled, (state, action) => {
+        state.saving = false;
         const idx = state.items.findIndex((t) => t.id === action.payload.id);
         if (idx === -1) state.items.unshift(action.payload);
         else state.items[idx] = action.payload;
       })
+      .addCase(removeTask.pending, (state) => { state.saving = true; })
+      .addCase(removeTask.rejected, (state) => { state.saving = false; })
       .addCase(removeTask.fulfilled, (state, action) => {
+        state.saving = false;
         state.items = state.items.filter((t) => t.id !== action.payload);
       })
       .addCase(toggleTaskRemote.fulfilled, (state, action) => {

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { saveRecipe, removeRecipe } from '../../store/slices/recipesSlice';
-import { assignMealRemote } from '../../store/slices/menuPlanSlice';
+import { assignMealRemote, clearMealRemote } from '../../store/slices/menuPlanSlice';
 import { showToast, setIsCreatingRecipe } from '../../store/slices/uiSlice';
-import { WEEK_DAYS } from '../../data';
+import { WEEK_DAYS, MEAL_TAGS } from '../../data';
 import MealSlot from '../../components/MealSlot';
 import RecipeDetailModal from '../../modals/RecipeDetailModal';
 import RecipeCreationModal from '../../modals/RecipeCreationModal';
@@ -19,6 +19,8 @@ const PlannerView = () => {
 
   const [plannerTab, setPlannerTab] = useState('menu');
   const [viewingRecipe, setViewingRecipe] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('All'); // FEATURE 7: Filter state
+  
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState('');
   const [selectedMeal, setSelectedMeal] = useState('');
@@ -57,9 +59,20 @@ const PlannerView = () => {
     }
   };
 
+  const handleClearMeal = async (day, meal) => {
+    const result = await dispatch(clearMealRemote({ day, meal }));
+    if (clearMealRemote.fulfilled.match(result)) {
+      dispatch(showToast('Meal cleared'));
+    }
+  };
+
   const openRecipeDetail = (recipe) => {
     setViewingRecipe(recipe);
   };
+
+  const filteredRecipes = activeFilter === 'All' 
+    ? recipes 
+    : recipes.filter(r => r.tags.includes(activeFilter));
 
   return (
     <div className="flex flex-col h-full relative">
@@ -80,9 +93,10 @@ const PlannerView = () => {
               <div key={day} className="bg-[var(--color-surface)] rounded-2xl shadow-sm border border-gray-100 p-4">
                 <h3 className="font-bold text-[var(--color-text)] mb-3">{day}</h3>
                 <div className="flex flex-col gap-2">
-                  <MealSlot meal="breakfast" icon="🍳" recipeId={menuPlan[day]?.breakfast} recipes={recipes} onClick={() => openAssignMeal(day, 'breakfast')} />
-                  <MealSlot meal="lunch" icon="🥗" recipeId={menuPlan[day]?.lunch} recipes={recipes} onClick={() => openAssignMeal(day, 'lunch')} />
-                  <MealSlot meal="dinner" icon="🍝" recipeId={menuPlan[day]?.dinner} recipes={recipes} onClick={() => openAssignMeal(day, 'dinner')} />
+                  <MealSlot meal="breakfast" icon="🍳" recipeId={menuPlan[day]?.breakfast} recipes={recipes} onClick={() => openAssignMeal(day, 'breakfast')} onClear={() => handleClearMeal(day, 'breakfast')} />
+                  <MealSlot meal="lunch" icon="🥗" recipeId={menuPlan[day]?.lunch} recipes={recipes} onClick={() => openAssignMeal(day, 'lunch')} onClear={() => handleClearMeal(day, 'lunch')} />
+                  <MealSlot meal="snacks" icon="🥨" recipeId={menuPlan[day]?.snacks} recipes={recipes} onClick={() => openAssignMeal(day, 'snacks')} onClear={() => handleClearMeal(day, 'snacks')} />
+                  <MealSlot meal="dinner" icon="🍝" recipeId={menuPlan[day]?.dinner} recipes={recipes} onClick={() => openAssignMeal(day, 'dinner')} onClear={() => handleClearMeal(day, 'dinner')} />
                 </div>
               </div>
             ))}
@@ -92,8 +106,28 @@ const PlannerView = () => {
             <button onClick={() => { setViewingRecipe(null); dispatch(setIsCreatingRecipe(true)); }} className="w-full border-2 border-dashed border-gray-300 text-gray-500 py-4 rounded-2xl text-sm font-bold hover:bg-[var(--color-surface)] hover:border-gray-400 transition-colors flex items-center justify-center gap-2">
               <span className="text-xl">＋</span> Create New Recipe
             </button>
+
+            {/* FEATURE 7: Filter Pills */}
+            <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar">
+                <button 
+                    onClick={() => setActiveFilter('All')} 
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap border ${activeFilter === 'All' ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-[var(--color-surface)] text-gray-500 border-gray-200'}`}
+                >
+                    All
+                </button>
+                {MEAL_TAGS.map(tag => (
+                    <button 
+                        key={tag} 
+                        onClick={() => setActiveFilter(tag)} 
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap border ${activeFilter === tag ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-[var(--color-surface)] text-gray-500 border-gray-200'}`}
+                    >
+                        {tag}
+                    </button>
+                ))}
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
-              {recipes.map((recipe) => (
+              {filteredRecipes.map((recipe) => (
                 <div key={recipe.id} onClick={() => openRecipeDetail(recipe)} className="bg-[var(--color-surface)] p-3 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex flex-col justify-between min-h-[120px]">
                   <div className="min-w-0">
                     <div className="flex flex-wrap gap-1 mb-2">

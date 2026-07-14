@@ -11,6 +11,9 @@ export const mapTask = (row) => ({
   owner: row.owner,
   done: row.done,
   completedBy: row.completed_by,
+  // FEATURE 8: Map assigned fields from database
+  assignedToId: row.assigned_to_user_id,
+  assignedToName: row.assigned_to_name
 });
 
 export const mapGrocery = (row) => ({
@@ -69,7 +72,7 @@ export const mapMember = (row, profile) => ({
   role: row.role,
   joinedAt: row.joined_at,
   name: profile?.display_name || 'Member',
-  color: profile?.color || '#6E8E75',
+  color: profile?.color || 'var(--color-primary)',
 });
 
 export const taskToDb = (task, householdId, userId, ownerName) => ({
@@ -80,6 +83,9 @@ export const taskToDb = (task, householdId, userId, ownerName) => ({
   created_by_user_id: userId,
   done: task.done || false,
   completed_by: task.completedBy || null,
+  // FEATURE 8: Send assigned fields to database
+  assigned_to_user_id: task.assignedToId || null,
+  assigned_to_name: task.assignedToName || null
 });
 
 export const groceryToDb = (item, householdId, userId, ownerName) => ({

@@ -10,7 +10,9 @@ export const saveGrocery = createAsyncThunk(
       const householdId = state.household.household?.id;
       const userId = state.auth.user?.id;
       const ownerName = getFirstName(state.config.currentUser);
+
       if (!householdId || !userId) throw new Error('No household loaded');
+
       if (isEdit) return await updateGroceryApi(item.id, item);
       return await createGrocery(householdId, userId, ownerName, item);
     } catch (err) {
@@ -37,6 +39,7 @@ export const toggleGroceryRemote = createAsyncThunk(
     try {
       const item = getState().groceries.items.find((g) => g.id === id);
       if (!item) throw new Error('Item not found');
+      
       const newDone = !item.done;
       return await updateGroceryApi(id, {
         ...item,
@@ -51,7 +54,8 @@ export const toggleGroceryRemote = createAsyncThunk(
 
 const groceriesSlice = createSlice({
   name: 'groceries',
-  initialState: { items: [] },
+  // FEATURE 2: Added Saving State
+  initialState: { items: [], saving: false },
   reducers: {
     setGroceries: (state, action) => {
       state.items = action.payload;
@@ -67,12 +71,18 @@ const groceriesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(saveGrocery.pending, (state) => { state.saving = true; })
+      .addCase(saveGrocery.rejected, (state) => { state.saving = false; })
       .addCase(saveGrocery.fulfilled, (state, action) => {
+        state.saving = false;
         const idx = state.items.findIndex((g) => g.id === action.payload.id);
         if (idx === -1) state.items.unshift(action.payload);
         else state.items[idx] = action.payload;
       })
+      .addCase(removeGrocery.pending, (state) => { state.saving = true; })
+      .addCase(removeGrocery.rejected, (state) => { state.saving = false; })
       .addCase(removeGrocery.fulfilled, (state, action) => {
+        state.saving = false;
         state.items = state.items.filter((g) => g.id !== action.payload);
       })
       .addCase(toggleGroceryRemote.fulfilled, (state, action) => {
